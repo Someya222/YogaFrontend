@@ -96,12 +96,12 @@ useEffect(() => {
     }
 
     try {
-      const datasetRes = await fetch('http://localhost:5000/api/yoga/dataset');
+      const datasetRes = await fetch(`${process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000/api'}/yoga/dataset`);
       const dataset = await datasetRes.json();
 
       const randomPose = dataset[Math.floor(Math.random() * dataset.length)];
 
-      const aiRes = await fetch('/api/yoga/generate', {
+      const aiRes = await fetch(`${process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000/api'}/yoga/generate`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ goal: randomPose.name }),

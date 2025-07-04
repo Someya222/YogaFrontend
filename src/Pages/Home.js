@@ -45,7 +45,7 @@ function Home() {
 
   try {
     // 1. Fetch the yoga dataset
-    const datasetRes = await fetch('http://localhost:5000/api/yoga/dataset');
+    const datasetRes = await fetch(`${process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000/api'}/yoga/dataset`);
     const datasetText = await datasetRes.text();
 
     let dataset;
