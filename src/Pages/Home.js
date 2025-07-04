@@ -95,16 +95,16 @@ if (typeof raw === 'string') {
   }
 }
 
-const goalInfo = raw?.[0]; // ✅ correct variable is 'raw'
 
 
-      const info = raw?.[0];
+
+      const goalInfo = raw?.[0];
 
       const enrichedPose = {
         title: matchedPose.name,
         image: matchedPose.photo_url,
-        instructions: info?.instructions || 'No instructions provided.',
-        benefits: info?.benefits || 'No benefits listed.',
+        instructions: goalInfo?.instructions || 'No instructions provided.',
+        benefits: goalInfo?.benefits || 'No benefits listed.',
       };
 
       setFiltered([enrichedPose]);
@@ -129,22 +129,74 @@ const goalInfo = raw?.[0]; // ✅ correct variable is 'raw'
     const aiPoses = typeof raw === 'string' ? JSON.parse(raw) : raw;
 
     // 5. Enrich each Gemini pose with image from dataset
-const enriched = aiPoses.map((pose) => {
-  const english = pose.english_name_search?.trim().toLowerCase();
-  const sanskrit = pose.sanskrit_name_search?.trim().toLowerCase();
+const enriched = aiPoses.slice(0, 6).map((pose) => {
+  const englishKey = pose.english_name_search?.trim().toLowerCase();
+  const sanskritKey = pose.sanskrit_name_search?.trim().toLowerCase();
+  const poseTitle = pose.title?.trim().toLowerCase();
 
-  // Match based on explicitly provided keys
-  const found = dataset.find((item) => {
-    const name = item.name?.trim().toLowerCase();
-    const sanskritName = item.sanskrit_name?.trim().toLowerCase();
-    return name === english || sanskritName === sanskrit;
+  // Helper to strip parentheses and non-alpha for loose match
+  const stripParens = str => str.replace(/\(.*?\)/g, '').trim();
+  const stripNonAlpha = str => str.replace(/[^a-zA-Z]/g, '').toLowerCase();
+  const stripPose = str => str.replace(/pose/gi, '').trim();
+
+  let matchedItem = dataset.find((item) => {
+    const name = item.name.trim().toLowerCase();
+    const sanskrit = item.sanskrit_name.trim().toLowerCase();
+    return (
+      name === englishKey ||
+      sanskrit === sanskritKey
+    );
   });
+
+  // Try partial match (ignoring parentheses and 'pose')
+  if (!matchedItem && poseTitle) {
+    const parenMatch = poseTitle.match(/\((.*?)\)/);
+    const parenParts = parenMatch ? parenMatch[1].split(';').map(p => p.trim()) : [];
+    const mainPart = poseTitle.split('(')[0].trim();
+    let parts = [mainPart, ...parenParts].map(p => p.toLowerCase()).filter(Boolean);
+    parts = parts.flatMap(p => [p, ...p.split(' ')]).map(p => stripPose(stripParens(p)).trim()).filter(Boolean);
+    matchedItem = dataset.find((item) => {
+      const name = stripPose(stripParens(item.name).toLowerCase());
+      const sanskrit = stripPose(stripParens(item.sanskrit_name).toLowerCase());
+      return parts.some(part => {
+        if (!part) return false;
+        return (
+          name === part ||
+          sanskrit === part ||
+          name.includes(part) ||
+          part.includes(name) ||
+          sanskrit.includes(part) ||
+          part.includes(sanskrit)
+        );
+      });
+    });
+  }
+
+  // Try very loose match (remove all non-alpha and 'pose')
+  if (!matchedItem && poseTitle) {
+    const poseKey = stripPose(stripNonAlpha(poseTitle));
+    matchedItem = dataset.find((item) => {
+      const nameAlpha = stripPose(stripNonAlpha(item.name));
+      const sanskritAlpha = stripPose(stripNonAlpha(item.sanskrit_name));
+      return (
+        (nameAlpha && poseKey && nameAlpha === poseKey) ||
+        (sanskritAlpha && poseKey && sanskritAlpha === poseKey)
+      );
+    });
+  }
+
+  if (!matchedItem) {
+    console.warn("No dataset match for:", pose.title);
+    console.log("Searched with:", englishKey, "or", sanskritKey);
+  }
 
   return {
     title: pose.title,
-    instructions: pose.instructions,
-    benefits: pose.benefits,
-    image: found?.photo_url || 'https://upload.wikimedia.org/wikipedia/commons/6/65/No-Image-Placeholder.svg',
+    image:
+      matchedItem?.photo_url ||
+      "https://upload.wikimedia.org/wikipedia/commons/6/65/No-Image-Placeholder.svg",
+    instructions: pose.instructions || "No instructions provided",
+    benefits: pose.benefits || "No benefits listed",
   };
 });
 

@@ -249,12 +249,24 @@
 }
 
 @media (max-width: 600px) {
+  .routine-container {
+    padding: 8px 2vw;
+    margin: 10px auto;
+  }
   .routine-card {
     padding: 14px 6px 14px 6px;
     max-width: 98vw;
   }
   .routine-card img {
     max-height: 110px;
+    width: 100%;
+    object-fit: contain;
+  }
+  .goal-button, .change-goal-button {
+    width: 100%;
+    font-size: 1.1rem;
+    padding: 10px 0;
+    margin: 8px 0;
   }
 }
 

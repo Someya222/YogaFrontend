@@ -2,6 +2,34 @@
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  padding: 0 16px;
+  box-sizing: border-box;
+}
+
+@media (max-width: 600px) {
+  .home-wrapper {
+    padding: 0 6px;
+  }
+  .home-wrapper .pose-card {
+    width: 98vw !important;
+    max-width: 100vw;
+    margin: 12px auto;
+  }
+  .home-wrapper {
+    margin-bottom: 60px;
+  }
+  .home-wrapper, .pose-card {
+    font-size: 1.1rem;
+  }
+}
+
+@media (max-width: 400px) {
+  .home-wrapper, .pose-card {
+    font-size: 1.1rem;
+  }
+  .home-wrapper .pose-card {
+    margin: 20px auto;
+  }
 }
 
 .spinner {
