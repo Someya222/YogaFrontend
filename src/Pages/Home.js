@@ -67,7 +67,7 @@ function Home() {
 
     if (matchedPose) {
       // 3. Ask Gemini for instructions and benefits of that pose
-      const aiRes = await fetch('/api/yoga/generate', {
+      const aiRes = await fetch(`${process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000/api'}/yoga/generate`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ goal: matchedPose.name }),
@@ -113,7 +113,7 @@ const goalInfo = raw?.[0]; // ✅ correct variable is 'raw'
     }
 
     // 4. If no exact pose match → general goal search
-    const aiGoalRes = await fetch('/api/yoga/generate', {
+    const aiGoalRes = await fetch(`${process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000/api'}/yoga/generate`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ goal: query }),

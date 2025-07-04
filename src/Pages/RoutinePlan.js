@@ -18,14 +18,14 @@ function RoutinePlan() {
   useEffect(() => {
   const checkAuthAndFetch = async () => {
     try {
-      await API.get('/auth/protected');
+      await API.get(`${process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000/api'}/auth/protected`);
 
       setStreakLoading(true);
-      const res = await API.get('/yoga/streak');
+      const res = await API.get(`${process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000/api'}/yoga/streak`);
       setStreak(res.data.streak || 0);
       setStreakLoading(false);
 
-     const routineRes = await API.get(`/yoga/routine?date=${today}`);
+     const routineRes = await API.get(`${process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000/api'}/yoga/routine?date=${today}`);
 const { routine: fetchedRoutine, goal: fetchedGoal } = routineRes.data;
 
 if (fetchedRoutine?.length) {
@@ -55,7 +55,7 @@ if (fetchedRoutine?.length) {
   if (!goal.trim()) return alert('Please enter a goal');
   setLoading(true);
   try {
-    const datasetRes = await fetch('http://localhost:5000/api/yoga/dataset');
+    const datasetRes = await fetch(`${process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000/api'}/yoga/dataset`);
     const dataset = await datasetRes.json();
 
     const aiRes = await fetch(`${process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000/api'}/yoga/generate`, {
@@ -72,34 +72,7 @@ if (fetchedRoutine?.length) {
       raw = JSON.parse(raw);
     }
     console.log("rawdata",raw)
-    // const enriched = raw.slice(0, 6).map((pose) => {
-    //   const title = pose.title.trim().toLowerCase();
-
-    //   const match = dataset.find((item) => {
-    //     const name = item.name.trim().toLowerCase();
-    //     const sanskrit = item.sanskrit_name.trim().toLowerCase();
-    //     return (
-    //       name.includes(title) ||
-    //       title.includes(name) ||
-    //       sanskrit.includes(title) ||
-    //       title.includes(sanskrit)
-    //     );
-    //   });
-
-    //   if (!match) {
-    //     console.warn('No match found for:', pose.title);
-    //   }
-
-    //   return {
-    //     title: pose.title,
-    //     image:
-    //       match?.photo_url ||
-    //       'https://upload.wikimedia.org/wikipedia/commons/6/65/No-Image-Placeholder.svg',
-    //     instructions: pose.instructions || 'No instructions provided',
-    //     benefits: pose.benefits || 'No benefits listed',
-    //     done: false,
-    //   };
-    // });
+    
 
 
 const enriched = raw.slice(0, 6).map((pose) => {
@@ -181,7 +154,7 @@ const enriched = raw.slice(0, 6).map((pose) => {
 
     setRoutine(enriched);
 
-    await API.post('/yoga/routine-status', {
+    await API.post(`${process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000/api'}/yoga/routine-status`, {
       date: today,
       goal,
       routine: enriched,
